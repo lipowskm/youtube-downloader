@@ -10,6 +10,9 @@ packages = [{include = "src"}]
 python = "^3.10"
 fastapi = "^0.95.0"
 uvicorn = {extras = ["standard"], version = "^0.21.1"}
+sqlmodel = "^0.0.8"
+rq = "^1.13.0"
+pytube = "^12.1.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
