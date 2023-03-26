@@ -1,7 +1,7 @@
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
-from api.src.jobs.utils import download_youtube_video, get_mp3_from_video_file
+from .utils import download_youtube_video, get_mp3_from_video_file
 
 
 def convert_youtube_url_to_mp3(url: str, output_dir: str):

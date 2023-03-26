@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends
@@ -5,7 +6,7 @@ from sqlalchemy.engine import Engine
 from sqlmodel import Session, SQLModel, create_engine
 
 engine = create_engine(
-    "sqlite:///test.db",
+    f"sqlite:///{str(Path(__file__).parent.absolute())}/test.db",
     # echo=settings.db.echo,
     # connect_args=settings.db.connect_args,
 )
