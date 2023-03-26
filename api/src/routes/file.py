@@ -1,36 +1,72 @@
 import asyncio
 from pathlib import Path
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException
-from sqlmodel import select
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.websockets import WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
+from redis.client import Redis
+from rq.exceptions import NoSuchJobError
+from rq.job import Job, JobStatus
 
-from ..db import ActiveSession
-from ..models import File
+from ..jobs import get_redis
 
 router = APIRouter()
 
 
+class FileJob(BaseModel):
+    id: str
+    status: str
+    queue_position: Optional[int] = None
+
+
 @router.get("/file/{file_id}", status_code=200)
-def get_file(file_id: str, session: ActiveSession) -> FileResponse:
+def get_file(file_id: str, redis: Redis = Depends(get_redis)) -> FileResponse:
     """Returns .mp3 file to user."""
-    statement = select(File).where(File.id == file_id)
-    file = session.exec(statement).first()
-    if not file:
+    try:
+        job = Job.fetch(id=file_id, connection=redis)
+    except NoSuchJobError:
         raise HTTPException(status_code=404, detail="File not found")
-    headers = {'Content-Disposition': f'attachment; filename="{Path(file.path).name}"'}
-    return FileResponse(file.path, headers=headers)
+    result = job.return_value()
+    if result and Path(result).is_file():
+        headers = {"Content-Disposition": f'attachment; filename="{Path(result).name}"'}
+        return FileResponse(result, headers=headers)
+    raise HTTPException(status_code=404, detail="File not found")
 
 
 @router.websocket("/notify/{file_id}/ws")
-async def notify(websocket: WebSocket, file_id: str, session: ActiveSession):
+async def notify(
+    websocket: WebSocket, file_id: str, redis: Redis = Depends(get_redis)
+) -> None:
+    """Send job status every one second until the job has finished."""
+
+    async def send_message(websocket: WebSocket, job: Job):
+        await websocket.send_json(
+            FileJob(
+                id=job.id,
+                status=job.get_status(refresh=True),
+                queue_position=job.get_position(),
+            ).json()
+        )
+
+    await websocket.accept()
     try:
-        await websocket.accept()
-        statement = select(File).where(File.id == file_id)
-        while not (file := session.exec(statement).first()):
+        job = Job.fetch(id=file_id, connection=redis)
+    except NoSuchJobError:
+        await websocket.close(reason="File not found")
+        return
+    try:
+        while job.get_status(refresh=True) not in (
+            JobStatus.FINISHED,
+            JobStatus.FAILED,
+            JobStatus.STOPPED,
+            JobStatus.CANCELED,
+        ):
+            await send_message(websocket, job)
             await asyncio.sleep(1)
-        await websocket.send_json(file.json())
+        await send_message(websocket, job)
         await websocket.close()
     except WebSocketDisconnect:
-        await websocket.close()
+        job.delete()
+        await websocket.close(code=1001)
