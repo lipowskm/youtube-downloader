@@ -39,16 +39,19 @@ def get_file(file_id: str, redis: Redis = Depends(get_redis)) -> FileResponse:
 async def notify(
     websocket: WebSocket, file_id: str, redis: Redis = Depends(get_redis)
 ) -> None:
-    """Send job status every one second until the job has finished."""
+    """Send job status on each change until the job has finished."""
+    last_message = None
 
     async def send_message(websocket: WebSocket, job: Job):
-        await websocket.send_json(
-            FileJob(
-                id=job.id,
-                status=job.get_status(refresh=True),
-                queue_position=job.get_position(),
-            ).json()
-        )
+        nonlocal last_message
+        message = FileJob(
+            id=job.id,
+            status=job.get_status(refresh=True),
+            queue_position=job.get_position(),
+        ).json()
+        if last_message != message:
+            await websocket.send_json(message)
+            last_message = message
 
     await websocket.accept()
     try:
