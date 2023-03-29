@@ -8,7 +8,7 @@ nox.options.sessions = ["test"]
 
 @session(python=["3.8", "3.9", "3.10", "3.11"])
 def test(s: Session) -> None:
-    s.install(".", "pytest", "pytest-cov")
+    s.install(".", "pytest", "pytest-cov", "fakeredis", "httpx", "pytest-cov")
     s.run(
         "python",
         "-m",
