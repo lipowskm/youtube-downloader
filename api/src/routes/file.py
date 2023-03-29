@@ -48,7 +48,7 @@ async def notify(
             id=job.id,
             status=job.get_status(refresh=True),
             queue_position=job.get_position(),
-        ).json()
+        ).dict()
         if last_message != message:
             await websocket.send_json(message)
             last_message = message
