@@ -46,7 +46,7 @@ def test_notify(api_client: TestClient, queue: rq.Queue):
         assert job.get_status() == JobStatus.FINISHED
         with api_client.websocket_connect("/notify/abc/ws") as websocket:
             response = websocket.receive_json()
-            assert FileJob(**json.loads(response)) == FileJob(
+            assert FileJob(**response) == FileJob(
                 id="abc", status=JobStatus.FINISHED, queue_position=None
             )
 
@@ -56,7 +56,7 @@ def test_notify_when_job_failed(api_client: TestClient, queue: rq.Queue):
     assert job.get_status() == JobStatus.FAILED
     with api_client.websocket_connect("/notify/abc/ws") as websocket:
         response = websocket.receive_json()
-        assert FileJob(**json.loads(response)) == FileJob(
+        assert FileJob(**response) == FileJob(
             id="abc", status=JobStatus.FAILED, queue_position=None
         )
 

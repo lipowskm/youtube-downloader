@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from redis.client import Redis
 from rq.exceptions import NoSuchJobError
 from rq.job import Job, JobStatus
+from websockets.exceptions import ConnectionClosedOK
 
 from ..jobs import get_redis
 
@@ -23,15 +24,15 @@ class FileJob(BaseModel):
 
 @router.get("/file/{file_id}", status_code=200)
 def get_file(file_id: str, redis: Redis = Depends(get_redis)) -> FileResponse:
-    """Returns .mp3 file to user."""
+    """Returns file to user."""
     try:
         job = Job.fetch(id=file_id, connection=redis)
     except NoSuchJobError:
         raise HTTPException(status_code=404, detail="File not found")
     result = job.return_value()
     if result and Path(result).is_file():
-        headers = {"Content-Disposition": f'attachment; filename="{Path(result).name}"'}
-        return FileResponse(result, headers=headers)
+        headers = {'Access-Control-Expose-Headers': 'Content-Disposition'}
+        return FileResponse(result, filename=Path(result).name, headers=headers)
     raise HTTPException(status_code=404, detail="File not found")
 
 
@@ -46,7 +47,7 @@ async def notify(
         nonlocal last_message
         message = FileJob(
             id=job.id,
-            status=job.get_status(refresh=True),
+            status=job.get_status(refresh=True).lower(),
             queue_position=job.get_position(),
         ).dict()
         if last_message != message:
@@ -70,6 +71,6 @@ async def notify(
             await asyncio.sleep(1)
         await send_message(websocket, job)
         await websocket.close()
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, ConnectionClosedOK):
         job.delete()
         await websocket.close(code=1001)

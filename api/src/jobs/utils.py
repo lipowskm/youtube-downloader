@@ -3,6 +3,7 @@ import subprocess
 from typing import Union
 
 from pytube import YouTube
+from unidecode import unidecode
 
 
 def download_youtube_video(url: str, output_dir: str) -> str:
@@ -13,11 +14,9 @@ def download_youtube_video(url: str, output_dir: str) -> str:
     :param output_dir: output directory to save video file
     :return: full path to downloaded video file
     """
-    return (
-        YouTube(url)
-        .streams.get_audio_only()
-        .download(output_dir, max_retries=3, timeout=120)
-    )
+    stream = YouTube(url).streams.get_audio_only()
+    filename = unidecode(stream.default_filename)
+    return stream.download(output_dir, filename=filename, max_retries=3, timeout=120)
 
 
 def get_mp3_from_video_file(

@@ -15,12 +15,12 @@ class Item(BaseModel):
 
 
 @router.get("/convert", status_code=200)
-def convert(youtube_url: str, queue: rq.Queue = Depends(get_queue)) -> Item:
-    """Fetch YouTube URL from user and queue job to convert it into MP3."""
+def convert(url: str, queue: rq.Queue = Depends(get_queue)) -> Item:
+    """Fetch URL from user and queue job to convert it into desired format."""
     file_id = uuid.uuid1().hex
     queue.enqueue(
         convert_youtube_url_to_mp3,
-        youtube_url,
+        url,
         f"/home/lipowskm/muza/{file_id}",
         job_id=file_id,
         retry=Retry(max=3, interval=1),
