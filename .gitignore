@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+api/dist/
 downloads/
 eggs/
 .eggs/
@@ -50,6 +50,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+.ruff_cache/
 
 # Translations
 *.mo
@@ -145,10 +146,17 @@ dist-ssr
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-../.idea
+.idea
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Frontend
+node_modules/
+.cache/
+dist/
+coverage/
+.vscode/
