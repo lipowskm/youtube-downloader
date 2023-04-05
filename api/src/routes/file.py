@@ -31,7 +31,7 @@ def get_file(file_id: str, redis: Redis = Depends(get_redis)) -> FileResponse:
         raise HTTPException(status_code=404, detail="File not found")
     result = job.return_value()
     if result and Path(result).is_file():
-        headers = {'Access-Control-Expose-Headers': 'Content-Disposition'}
+        headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
         return FileResponse(result, filename=Path(result).name, headers=headers)
     raise HTTPException(status_code=404, detail="File not found")
 

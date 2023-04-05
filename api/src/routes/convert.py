@@ -1,11 +1,13 @@
 import uuid
 
 from fastapi import APIRouter, Depends
+from fastapi.requests import Request
 from pydantic import BaseModel
 import rq
 from rq.job import Retry
 
 from ..jobs import convert_youtube_url_to_mp3, get_queue
+from ..jobs.limiter import rate_limiter
 
 router = APIRouter()
 
@@ -15,7 +17,8 @@ class Item(BaseModel):
 
 
 @router.get("/convert", status_code=200)
-def convert(url: str, queue: rq.Queue = Depends(get_queue)) -> Item:
+@rate_limiter(times=1, seconds=10)
+def convert(request: Request, url: str, queue: rq.Queue = Depends(get_queue)) -> Item:
     """Fetch URL from user and queue job to convert it into desired format."""
     file_id = uuid.uuid1().hex
     queue.enqueue(
