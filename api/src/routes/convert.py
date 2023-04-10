@@ -17,7 +17,7 @@ class Item(BaseModel):
 
 
 @router.get("/convert", status_code=200)
-@rate_limiter(times=1, seconds=10)
+@rate_limiter(times=1, seconds=10, whitelist=("127.0.0.1",))
 def convert(request: Request, url: str, queue: rq.Queue = Depends(get_queue)) -> Item:
     """Fetch URL from user and queue job to convert it into desired format."""
     file_id = uuid.uuid1().hex
