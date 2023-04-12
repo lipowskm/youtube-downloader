@@ -1,3 +1,4 @@
+from pathlib import Path
 import uuid
 
 from fastapi import APIRouter, Depends
@@ -6,6 +7,7 @@ from pydantic import BaseModel
 import rq
 from rq.job import Retry
 
+from ..config import settings
 from ..jobs import convert_youtube_url_to_mp3, get_queue
 from ..jobs.limiter import rate_limiter
 
@@ -24,7 +26,7 @@ def convert(request: Request, url: str, queue: rq.Queue = Depends(get_queue)) ->
     queue.enqueue(
         convert_youtube_url_to_mp3,
         url,
-        f"/home/lipowskm/muza/{file_id}",
+        Path(settings.output_dir) / file_id,
         job_id=file_id,
         retry=Retry(max=3, interval=1),
     )

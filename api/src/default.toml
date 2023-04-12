@@ -1,4 +1,5 @@
 [default]
+output_dir = "/home/media_grabber/files"
 
 [default.redis]
 host = "127.0.0.1"
