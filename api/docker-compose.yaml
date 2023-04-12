@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: api
+    ports:
+      - "8000:8000"
+    environment:
+      API_OUTPUT_DIR: "/home/files"
+      API_REDIS__HOST: redis-server
+      API_REDIS__PORT: 6379
+    depends_on:
+      - redis-server
+    volumes:
+      - output_dir:/home/files
+  redis-server:
+    image: redis:7.0.10
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - redis:/data
+  rq-worker:
+    image: api
+    command: rq worker -u redis://redis-server:6379 --with-scheduler
+    deploy:
+      replicas: 8
+    depends_on:
+      - redis-server
+      - api
+    volumes:
+      - output_dir:/home/files
+
+volumes:
+  redis:
+    driver: local
+  output_dir:
+    driver: local
