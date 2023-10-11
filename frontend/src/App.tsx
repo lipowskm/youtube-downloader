@@ -22,7 +22,6 @@ import {
 import { AlertSuccess } from "./components/AlertSuccess";
 import { AlertError } from "./components/AlertError";
 
-
 function App() {
   const [inputUrl, setInputUrl] = useState("");
   const [urlValid, setUrlValid] = useState(false);
@@ -132,12 +131,15 @@ function App() {
           timingFunction="ease"
         >
           {(styles) =>
-            (fileUrl.length > 0 && (
-              <AlertSuccess styles={styles} fileUrl={fileUrl} />
-            )) ||
-            (errorMessage.length > 0 && (
-              <AlertError styles={styles} message={errorMessage} />
-            ))
+            fileUrl.length > 0 || errorMessage.length > 0 ? (
+              fileUrl.length > 0 ? (
+                <AlertSuccess styles={styles} fileUrl={fileUrl} />
+              ) : (
+                <AlertError styles={styles} message={errorMessage} />
+              )
+            ) : (
+              <></>
+            )
           }
         </Transition>
       </Container>
