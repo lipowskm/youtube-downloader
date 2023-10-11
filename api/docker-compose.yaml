@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: api
+    restart: always
     ports:
       - "8000:8000"
     environment:
@@ -14,22 +15,31 @@ services:
       API_REDIS__PORT: 6379
     depends_on:
       - redis-server
+      - rq-scheduler
+      - rq-worker
     volumes:
       - output_dir:/home/files
   redis-server:
     image: redis:7.0.10
     restart: always
-    command: redis-server --save 20 1 --loglevel warning
+    command: redis-server --save 60 1 --loglevel warning
     volumes:
       - redis:/data
+  rq-scheduler:
+    image: api
+    restart: always
+    depends_on:
+      - redis-server
+    command: rqscheduler --host redis-server --port 6379
   rq-worker:
     image: api
-    command: rq worker -u redis://redis-server:6379 --with-scheduler
+    restart: always
+    command: rq worker -u redis://redis-server:6379 --with-scheduler high default
     deploy:
       replicas: 8
     depends_on:
       - redis-server
-      - api
+      - rq-scheduler
     volumes:
       - output_dir:/home/files
 

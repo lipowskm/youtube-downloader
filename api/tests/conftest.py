@@ -1,5 +1,5 @@
 from api.src import app
-from api.src.jobs import get_queue, get_redis
+from api.src.jobs import get_default_queue, get_redis
 import fakeredis
 from fastapi.testclient import TestClient
 import pytest
@@ -22,7 +22,7 @@ def override_get_queue() -> rq.Queue:
 
 
 app.dependency_overrides[get_redis] = override_get_redis
-app.dependency_overrides[get_queue] = override_get_queue
+app.dependency_overrides[get_default_queue] = override_get_queue
 
 
 @pytest.fixture(scope="function")

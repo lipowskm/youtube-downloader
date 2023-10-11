@@ -1,6 +1,12 @@
 [default]
-output_dir = "/home/media_grabber/files"
+output_dir = "/Users/hq0027/media_grabber/files"
+delete_files_older_than_seconds = 3600
 
 [default.redis]
 host = "127.0.0.1"
 port = 6379
+
+[default.rq_dashboard]
+endpoint = "rq"
+username = "admin"
+password = "admin"
