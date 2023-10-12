@@ -4,14 +4,18 @@ import os
 from pathlib import Path
 import shutil
 import tempfile
-from typing import Union
+from typing import Type, Union
 
-from .utils import download_youtube_video, get_mp3_from_video_file
+from ..handlers import BaseHandler
+from .utils import get_mp3_from_video_file
 
 
-def convert_youtube_url_to_mp3(url: str, output_dir: Union[str, Path]):
+def download_and_convert(
+    handler: Type[BaseHandler], url: str, output_dir: Union[str, Path]
+) -> str:
+    # TODO check if temp file gets deleted
     with tempfile.TemporaryDirectory() as tmpdir:
-        video_file_path = download_youtube_video(url, tmpdir)
+        video_file_path = handler.download_file(url, tmpdir)
         mp3_path = get_mp3_from_video_file(video_file_path, output_dir)
     return mp3_path
 

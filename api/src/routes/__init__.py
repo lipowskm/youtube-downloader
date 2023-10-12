@@ -9,5 +9,5 @@ main_router.include_router(file_router, tags=["file"])
 
 
 @main_router.get("/")
-async def index():
+async def index() -> dict:
     return {"message": "Hello World!"}

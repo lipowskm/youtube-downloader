@@ -2,22 +2,6 @@ from pathlib import Path
 import subprocess
 from typing import Union
 
-from pytube import YouTube
-from unidecode import unidecode
-
-
-def download_youtube_video(url: str, output_dir: str) -> str:
-    """
-    Download video from YouTube.
-
-    :param url: URL to YouTube video
-    :param output_dir: output directory to save video file
-    :return: full path to downloaded video file
-    """
-    stream = YouTube(url).streams.get_audio_only()
-    filename = unidecode(stream.default_filename)
-    return stream.download(output_dir, filename=filename, max_retries=3, timeout=120)
-
 
 def get_mp3_from_video_file(
     path: Union[str, Path], output_dir: Union[str, Path]

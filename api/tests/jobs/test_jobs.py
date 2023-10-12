@@ -6,7 +6,7 @@ import time
 from api.src.jobs import delete_all_files_older_than
 
 
-def test_delete_all_files_older_than():
+def test_delete_all_files_older_than() -> None:
     """Test if old enough files are deleted properly."""
     with tempfile.TemporaryDirectory() as tempdir:
         file1 = tempfile.NamedTemporaryFile(dir=tempdir)

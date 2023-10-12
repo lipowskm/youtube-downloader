@@ -13,7 +13,7 @@ def check_auth(
     return username == valid_username and password == valid_password
 
 
-def authenticate():
+def authenticate() -> Response:
     """Sends a 401 response that enables basic auth."""
     return Response(
         "Could not verify your access level for that URL.\n"
@@ -23,10 +23,10 @@ def authenticate():
     )
 
 
-def basic_auth(username: Optional[str], password: Optional[str]):
+def basic_auth(username: Optional[str], password: Optional[str]) -> Optional[Response]:
     """Ensure basic authorization."""
     if not username or not password:
-        return
+        return None
     auth = request.authorization
     if not auth or not check_auth(auth.username, username, auth.password, password):
         return authenticate()

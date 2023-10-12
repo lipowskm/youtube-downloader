@@ -4,14 +4,14 @@ from pytest_mock import MockerFixture
 from rq.job import Job
 
 
-def test_convert_status_code(api_client: TestClient):
+def test_convert_status_code(api_client: TestClient) -> None:
     response = api_client.get(
         "/convert", params={"url": "https://www.youtube.com/watch?v=test"}
     )
     assert response.status_code == 200
 
 
-def test_convert_returns_file_id(api_client: TestClient):
+def test_convert_returns_file_id(api_client: TestClient) -> None:
     response = api_client.get(
         "/convert", params={"url": "https://www.youtube.com/watch?v=test"}
     )
@@ -21,8 +21,8 @@ def test_convert_returns_file_id(api_client: TestClient):
 
 def test_convert_queues_job(
     api_client: TestClient, redis: fakeredis.FakeStrictRedis, mocker: MockerFixture
-):
-    mock_convert = mocker.patch("api.src.jobs.jobs.convert_youtube_url_to_mp3")
+) -> None:
+    mock_convert = mocker.patch("api.src.jobs.jobs.download_and_convert")
     mock_convert.return_value = "abc"
 
     response = api_client.get(

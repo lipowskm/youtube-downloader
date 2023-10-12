@@ -45,7 +45,7 @@ async def notify(
 ) -> None:
     """Send job status on each change until the job has finished."""
 
-    async def send_message(job: Job):
+    async def send_message(job: Job) -> None:
         message = FileJob(
             id=job.id,
             status=job.get_status(refresh=True).lower(),

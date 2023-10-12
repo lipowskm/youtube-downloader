@@ -1,12 +1,12 @@
 import functools
-from typing import Callable, Container
+from typing import Any, Callable, Container
 
 from api.src.jobs import redis_conn
 from fastapi import HTTPException, status
 from fastapi.requests import Request
 
 
-def rate_limiter(times: int, seconds: int, whitelist: Container = ()) -> Callable:
+def rate_limiter(times: int, seconds: int, whitelist: Container[str] = ()) -> Callable:
     """
     Decorator for rate limiting endpoint per IP.
 
@@ -15,9 +15,9 @@ def rate_limiter(times: int, seconds: int, whitelist: Container = ()) -> Callabl
     :param whitelist: list of IPs that won't be rate limited
     """
 
-    def wrapper(func: Callable):
+    def wrapper(func: Callable) -> Callable:
         @functools.wraps(func)
-        def wrapper_func(*args, **kwargs):
+        def wrapper_func(*args, **kwargs) -> Any:
             request: Request = kwargs.get("request")
             if not request:
                 return func(*args, **kwargs)
